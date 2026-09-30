@@ -1,4 +1,5 @@
 package com.mycompany.proyecto1;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,11 +25,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
 public class Proyecto1 {
     public static class Punto {
         double x, y;
         Punto(double x, double y) { this.x = x; this.y = y; }
     }
+
     public static class Orientacion {
         public static Punto restar(Punto a, Punto b) {
             return new Punto(a.x - b.x, a.y - b.y);
@@ -86,6 +89,7 @@ public class Proyecto1 {
             return dentro;
         }
     }
+
     public static class Poligono {
         private final List<Punto> vertices = new ArrayList<>();
         public void agregarVertice(double x, double y) {
@@ -139,6 +143,7 @@ public class Proyecto1 {
             return Color.WHITE;
         }
     }
+
     public static class Blanco {
         double cx, cy;
         double vx, vy;
@@ -170,6 +175,7 @@ public class Proyecto1 {
             }
         }
     }
+
     public static class Generador {
         private static final Random rnd = new Random();
         private static final double VELOCIDAD = 0.25;
@@ -190,6 +196,7 @@ public class Proyecto1 {
             return new Blanco(cx, cy, vx, vy, radio, p);
         }
     }
+
     // Efectos de tiro (NO MODIFICAR)
     public static class Explosion {
         double x, y;
@@ -202,6 +209,7 @@ public class Proyecto1 {
             this.color = color;
         }
     }
+
     public static class TextoFlotante {
         double x, y;
         int vida = 50;
@@ -214,6 +222,7 @@ public class Proyecto1 {
             this.color = color;
         }
     }
+
     // Panel de juego (NO MODIFICAR)
     public static class PanelJuego extends JPanel {
         private static final double MUNDO_ANCHO = 12;
@@ -226,6 +235,7 @@ public class Proyecto1 {
         private int errores = 0;
         private JLabel lblPuntaje, lblAciertos, lblErrores, lblConsigna;
         private Timer timerAnimacion;
+
         public PanelJuego() {
             setBackground(new Color(15, 20, 35));
             setLayout(new BorderLayout());
@@ -252,7 +262,7 @@ public class Proyecto1 {
             add(inferior, BorderLayout.SOUTH);
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mousePressed(MouseEvent e) { // se cambio de mouseClicked a mousePressed para mejor respuesta
+                public void mousePressed(MouseEvent e) { 
                     disparar(e.getX(), e.getY());
                 }
             });
@@ -427,25 +437,31 @@ public class Proyecto1 {
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setLayout(new BorderLayout());
         PanelJuego panel = new PanelJuego();
+        
         JPanel lateral = new JPanel(new BorderLayout(5, 5));
         lateral.setBackground(new Color(25, 30, 50));
         lateral.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         lateral.setPreferredSize(new Dimension(280, 0));
+        
         JLabel titulo = new JLabel("➕ Crear polígono");
         titulo.setForeground(Color.WHITE);
         titulo.setFont(new Font("SansSerif", Font.BOLD, 14));
+        
         JLabel instruccion = new JLabel("<html>Escribe las coordenadas<br>(una por línea, formato x, y):</html>");
         instruccion.setForeground(new Color(200, 200, 220));
         instruccion.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        
         JTextArea areaCoords = new JTextArea(8, 20);
         areaCoords.setText("0,0\n2,0\n3,1\n2,2\n0,2");
         areaCoords.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scroll = new JScrollPane(areaCoords);
+        
         JButton btnAgregar = new JButton("Agregar al juego");
         btnAgregar.setBackground(new Color(100, 200, 120));
         btnAgregar.setForeground(Color.WHITE);
         btnAgregar.setFocusPainted(false);
         btnAgregar.setFont(new Font("SansSerif", Font.BOLD, 13));
+        
         JLabel lblEstado = new JLabel(" ");
         lblEstado.setForeground(new Color(200, 255, 200));
         lblEstado.setFont(new Font("SansSerif", Font.BOLD, 12));
@@ -497,24 +513,95 @@ public class Proyecto1 {
             lblEstado.setText("Agregado: " + poli.getTipo() + " " + poli.getSentido());
         });
 
+        // --- Secreto -------------------------------------------------------------------------------------------------
+        titulo.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Random rnd = new Random();
+                double cx = rnd.nextDouble() * 8 + 2; // Centro X entre 2 y 10
+                double cy = rnd.nextDouble() * 5 + 2; // Centro Y entre 2 y 7
+                StringBuilder sb = new StringBuilder();
+                
+                int tipoForma = rnd.nextInt(3); // 0: Regular, 1: Estrella, 2: Rectángulo
+
+                if (tipoForma == 0) {
+                    // Polígono Regular (triángulo, cuadrado, pentágono, hexágono)
+                    int numVertices = rnd.nextInt(4) + 3; // 3 a 6 lados
+                    double radio = 1.0 + rnd.nextDouble() * 1.5;
+                    double anguloOffset = rnd.nextDouble() * Math.PI; // Rotación aleatoria
+
+                    for (int i = 0; i < numVertices; i++) {
+                        double angulo = anguloOffset + (2 * Math.PI * i) / numVertices;
+                        double x = cx + radio * Math.cos(angulo);
+                        double y = cy + radio * Math.sin(angulo);
+                        sb.append(String.format(java.util.Locale.US, "%.2f,%.2f\n", x, y));
+                    }
+                } else if (tipoForma == 1) {
+                    // Estrella (Cóncavo asegurado)
+                    int puntas = rnd.nextInt(3) + 4; // 4 a 6 puntas
+                    int numVertices = puntas * 2;
+                    double radioMayor = 1.2 + rnd.nextDouble() * 1.0;
+                    double radioMenor = radioMayor * (0.3 + rnd.nextDouble() * 0.25); // Más hundido
+                    double anguloOffset = rnd.nextDouble() * Math.PI;
+
+                    for (int i = 0; i < numVertices; i++) {
+                        double angulo = anguloOffset + (2 * Math.PI * i) / numVertices;
+                        double radio = (i % 2 == 0) ? radioMayor : radioMenor;
+                        double x = cx + radio * Math.cos(angulo);
+                        double y = cy + radio * Math.sin(angulo);
+                        sb.append(String.format(java.util.Locale.US, "%.2f,%.2f\n", x, y));
+                    }
+                } else {
+                    // Rectángulo rotado
+                    double ancho = 1.5 + rnd.nextDouble() * 1.5;
+                    double alto = 0.8 + rnd.nextDouble() * 1.0;
+                    double anguloOffset = rnd.nextDouble() * Math.PI; // Rotación
+                    
+                    // Coordenadas locales del rectángulo
+                    double[][] bases = {
+                        {-ancho/2, -alto/2},
+                        { ancho/2, -alto/2},
+                        { ancho/2,  alto/2},
+                        {-ancho/2,  alto/2}
+                    };
+
+                    for (double[] pt : bases) {
+                        // Aplicar rotación y trasladar al centro (cx, cy)
+                        double rx = pt[0] * Math.cos(anguloOffset) - pt[1] * Math.sin(anguloOffset);
+                        double ry = pt[0] * Math.sin(anguloOffset) + pt[1] * Math.cos(anguloOffset);
+                        sb.append(String.format(java.util.Locale.US, "%.2f,%.2f\n", cx + rx, cy + ry));
+                    }
+                }
+                
+                areaCoords.setText(sb.toString().trim());// Coloca las coordenadas generadas en el área de texto
+                btnAgregar.doClick(); // Simula el clic en "Agregar al juego"
+            }
+        });
+        // ---------------------------------------------------------------------------------
+
         JPanel panelSuperior = new JPanel(new BorderLayout(5, 5));
         panelSuperior.setOpaque(false);
         panelSuperior.add(titulo, BorderLayout.NORTH);
         panelSuperior.add(instruccion, BorderLayout.CENTER);
+        
         JPanel panelBotones = new JPanel(new BorderLayout(5, 5));
         panelBotones.setOpaque(false);
         panelBotones.add(btnAgregar, BorderLayout.NORTH);
         panelBotones.add(lblEstado, BorderLayout.SOUTH);
+        
         lateral.add(panelSuperior, BorderLayout.NORTH);
         lateral.add(scroll, BorderLayout.CENTER);
         lateral.add(panelBotones, BorderLayout.SOUTH);
+        
         ventana.add(lateral, BorderLayout.WEST);
         ventana.add(panel, BorderLayout.CENTER);
+        
         ventana.setSize(1200, 750);
         ventana.setLocationRelativeTo(null);
         ventana.setVisible(true);
         panel.agregarBlanco(Generador.generarEjemplo(12, 9));
     }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Proyecto1::crearYMostrarVentana);
     }
